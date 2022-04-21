@@ -94,6 +94,6 @@ int main()
 	FrameRecipe fr(20, frame_data);
 
 	fr.debug_file();
-	fr.debug_set();
-	fr.debug_empty_mapvector();
+
+	wcout << fr << endl;
 }

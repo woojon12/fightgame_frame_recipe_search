@@ -68,9 +68,10 @@ bool FrameRecipe::exist_recipe(int next_target)
 //result_recipe[13][0][4] = 1 이란 건 13의 레시피 중 첫번째(인덱스 상 0번째) 발견된 레시피는 4가 1번 들어간다는 뜻. 레시피 3334의 일부를 나타낸 거.
 void FrameRecipe::read_memo(int current_target, int next_target1, int next_target2)
 {
-	result_recipe[current_target].push_back(*new std::map<int, int>);
+	std::vector<std::map<int, int>>& current_result_vector = result_recipe[current_target];
+	std::vector<std::map<int, int>>::iterator candidate = --current_result_vector.end();
 
-	std::vector<std::map<int, int>>::iterator candidate = --result_recipe[current_target].end();
+	current_result_vector.push_back(*new std::map<int, int>);
 
 	for (const std::map<int, int>& res1 : result_recipe[next_target1])
 		for (const std::map<int, int>& res2 : result_recipe[next_target2]) {
@@ -85,11 +86,9 @@ void FrameRecipe::read_memo(int current_target, int next_target1, int next_targe
 				(*candidate)[p2.first] += p2.second;
 			}
 
-			//TODO : 같은 조합이 있는지 확인할 것. 있으면 이 파트는 result_recipe[current_target].erase(--생략.end())로 삭제
-			for (std::pair<int, int> p : (*candidate)) {
-			}
+			//DONE : 같은 조합이 있는지 확인할 것. 있으면 이 파트는 result_recipe[current_target].erase(--생략.end())로 삭제
+			if (already_exist(candidate, current_result_vector)) current_result_vector.erase(--current_result_vector.end());
 		}
-
 }
 
 bool FrameRecipe::is_A_aliquot_of_B(int current_min_frame, int current_target)
@@ -97,6 +96,18 @@ bool FrameRecipe::is_A_aliquot_of_B(int current_min_frame, int current_target)
 	if (current_target % current_min_frame == 0) return true;
 
 	return false;
+}
+
+bool FrameRecipe::already_exist(std::vector<std::map<int, int>>::iterator candidate, std::vector<std::map<int, int>>& current_result_vector)
+{
+	for (std::vector<std::map<int, int>>::iterator vitr = current_result_vector.begin(); vitr != --current_result_vector.end(); ++vitr) {
+		for (std::map<int, int>::iterator mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
+			std::map<int, int>::iterator first_of_stdpair = vitr->find(mitr->first);
+			if (vitr->find(mitr->first) == vitr->end()) return false;
+			if (vitr->find(mitr->first)->second != mitr->second) return false;
+		}
+	}
+	return true;
 }
 
 void FrameRecipe::debug_file()
@@ -123,16 +134,16 @@ void FrameRecipe::debug_empty_mapvector()
 	map<int, vector<int>> mv;
 	map<int, int> mi1;
 
-	cout << "mv 00 : " << mv[0][0] << endl;
+	//cout << "mv 00 : " << (mv[0][0] == 0) << endl;
 	cout << "mi1 0 : " << mi1[0] << endl;
 
 	map<int, int> mi2;
 
-	mi1.insert({ 1, 1 });
-	mi1.insert({ 2, 2 });
+	mi1.insert({ 1, 3 });
+	mi1.insert({ 2, 4 });
 
-	mi2.insert({ 1, 1 });
-	mi2.insert({ 2, 2 });
+	mi2.insert({ 1, 3 });
+	mi2.insert({ 2, 4 });
 
 	cout << (mi1 == mi2) << endl;
 }
@@ -145,7 +156,7 @@ std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 	of << "#" << fr.target_frame << std::endl;
 
 	if (fr.result_recipe[fr.target_frame].size() == 0) {
-		of << "발견된 레시피 없음\n\n";
+		of << L"발견된 레시피 없음\n\n";
 		return of;
 	}
 
@@ -154,7 +165,7 @@ std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 		fr.outputting(of, one_of_results.begin());
 		
 		for (std::map<int, int>::iterator mitr = ++one_of_results.begin(); mitr != one_of_results.end(); ++mitr) {
-			std::cout << " + ";
+			of << " + ";
 			fr.outputting(of, mitr);
 		}
 	}
@@ -179,7 +190,7 @@ std::wostream& operator<<(std::wostream& o, FrameRecipe& fr)
 	o << "#" << fr.target_frame << std::endl;
 
 	if (fr.result_recipe[fr.target_frame].size() == 0) {
-		o << "발견된 레시피 없음\n\n";
+		o << L"발견된 레시피 없음\n\n";
 		return o;
 	}
 
@@ -188,7 +199,7 @@ std::wostream& operator<<(std::wostream& o, FrameRecipe& fr)
 		fr.outputting(o, one_of_results.begin());
 
 		for (std::map<int, int>::iterator mitr = ++one_of_results.begin(); mitr != one_of_results.end(); ++mitr) {
-			std::cout << " + ";
+			o << L" + ";
 			fr.outputting(o, mitr);
 		}
 	}
@@ -200,7 +211,7 @@ std::wostream& operator<<(std::wostream& o, FrameRecipe& fr)
 
 //나 지금까지 템플릿에 대해 너무 불안했는데 (사용자들이 예상치 못한 매개변수를 넘기면 어떡하지 하고)
 //이제보니까 사용자들이 쓰게 하는 게 아니라
-//내부에서 중복되는 부분에만 써서 나만 잘 쓰면 되네?
+//템플릿을 내부에서만 써서 나만 잘 쓰면 되네?
 //무슨 얘기냐면 위에 operator<< 함수보면 wofstream, wostream 인 것만 다르고 다 같은데도
 //사용자가 쓰는 함수니까 템플릿 안 써서 구현했고 오로지 내부에서만 알아서 템플릿 적용된 함수 쓴다
 template<typename Out>
