@@ -9,7 +9,7 @@
 class FrameRecipe {
 	int target_frame;
 
-	static std::map<int, std::map<std::pair<int, int>, std::map<int, int>>> result_recipe; //결과 저장할 곳. 13은 예를 들어 3이 3개, 4가 1개로 이루어져있다는 식으로 저장
+	static std::map<int, std::vector<std::map<int, int>>> result_recipe; //결과 저장할 곳. 13은 예를 들어 3이 3개, 4가 1개로 이루어져있다는 식으로 저장
 	//어차피 wstring 정보는 읽기작업을 위해 반드시 필요한 아래 character_moves가 있으니 여기선 레시피의 숫자만 저장한다.
 	std::map<int, std::vector<std::wstring>> character_moves; //메모장 데이터 뽑아올 곳. first(int)는 동작프레임, second(wstring)는 기술명이다
 	static std::map<int, std::vector<std::pair<int, int>>> bipartition;
@@ -17,8 +17,9 @@ class FrameRecipe {
 	void recipe_find(int next_target);
 	bool not_visited(int next_target);
 	bool exist_recipe(int next_target);
-		int min_frame;
-	bool read_memo(int, int, int);
+	void read_memo(int, int, int);
+	bool is_A_aliquot_of_B(int current_min_frame, int current_target);
+
 public:
 	FrameRecipe(int target_frame, std::wifstream& frame_data) : target_frame(target_frame) {
 		if (frame_data.fail()) { std::wcout << "파일이 없습니다\n" << std::endl; return; }
@@ -43,6 +44,8 @@ public:
 
 	void debug_file();
 	void debug_set();
+	void debug_empty_mapvector();
 	friend std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr);
 	friend std::wostream& operator<<(std::wostream& o, FrameRecipe& fr);
+private: template<typename Out> void outputting(Out& of, std::map<int, int>::iterator mitr);
 };

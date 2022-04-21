@@ -95,4 +95,5 @@ int main()
 
 	fr.debug_file();
 	fr.debug_set();
+	fr.debug_empty_mapvector();
 }

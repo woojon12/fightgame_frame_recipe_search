@@ -6,24 +6,25 @@
 
 void FrameRecipe::recipe_find(int current_target) {
 	//TODO: 최대조합(목표÷최소) 최적화, 
-	//DONE: 대칭 최적화
+	//DOING: 대칭 최적화
 
 	if (current_target == 0) return;
 	
 	std::map<int, std::vector<std::wstring>>::iterator mitr = character_moves.begin();
-	min_frame = mitr->first;
 
 	for (; mitr != character_moves.end(); ++mitr) {
 		//최소찾기
 		int current_min_frame = mitr->first; //애초에 map이란 자료구조가 key오름차순 정렬 해놓기에 첫번째가 제일 작은 놈.
-		//근데 잠만 찐 최소는 0 아닌가. 9를 분할하기 전에 0과 9로 분할아닌 분할을 해야 되지 않나
-		if (current_min_frame > target_frame) break;
+		//근데 잠만 찐 최소는 0 아닌가. 9를 분할하기 전에 0과 9로 분할아닌 분할을 해야 되지 않나 (Done)
+		if (current_min_frame > current_target) break;
+
+		bool is_aliquot = is_A_aliquot_of_B(current_min_frame, current_target);
 
 		for (int i = 0; true; ++i) {
 			int one_of_next_targets1 = current_min_frame * i;
 			int one_of_next_targets2 = current_target - one_of_next_targets1;
 
-			if (one_of_next_targets2 < current_target / 2) //대칭중복 방지 및 종료조건
+			if (one_of_next_targets2 < current_target / 2 && is_aliquot) //대칭중복 방지 및 종료조건 //DONE : current_min_frame 이 current_target의 약수여야 대칭이 발생함
 				break;
 
 			bipartition[current_target].push_back({ one_of_next_targets1, one_of_next_targets2 });
@@ -41,15 +42,13 @@ void FrameRecipe::recipe_find(int current_target) {
 
 	//재귀완료된 건 메모이제이션(저장)
 
-	//다음 최소를 찾고 반복. 다음 최소가 타겟보다 커지거나 모든 무브를 방문할 때까지.
+	//다음 최소를 찾고 반복. 다음 최소가 타겟보다 커지거나 모든 무브를 방문할 때까지. (Done)
 }
 
 bool FrameRecipe::not_visited(int next_target)
 {
 	std::map<int, std::vector<std::pair<int, int>>>::iterator memoitr;
 	memoitr = bipartition.find(next_target);
-
-	if (next_target <= min_frame) return false;
 
 	if (memoitr == bipartition.end()) return true;
 
@@ -58,21 +57,46 @@ bool FrameRecipe::not_visited(int next_target)
 
 bool FrameRecipe::exist_recipe(int next_target)
 {
-	std::map<int, std::map<int, int>>::iterator resitr;
+	std::map<int, std::vector<std::map<int, int>>>::iterator resitr;
 	resitr = result_recipe.find(next_target);
-
-	if (next_target == min_frame) return true;
 
 	if (resitr == result_recipe.end()) return false;
 
 	return true;
 }
 
-bool FrameRecipe::read_memo(int current_target, int next_target1, int next_target2)
+//result_recipe[13][0][4] = 1 이란 건 13의 레시피 중 첫번째(인덱스 상 0번째) 발견된 레시피는 4가 1번 들어간다는 뜻. 레시피 3334의 일부를 나타낸 거.
+void FrameRecipe::read_memo(int current_target, int next_target1, int next_target2)
 {
-	std::map<int, int>::iterator resitr = result_recipe[next_target1].begin(); resitr != result_recipe[next_target1].end(); ++resitr;
+	result_recipe[current_target].push_back(*new std::map<int, int>);
 
-	result_recipe[current_target][resitr->first] += resitr->second;
+	std::vector<std::map<int, int>>::iterator candidate = --result_recipe[current_target].end();
+
+	for (const std::map<int, int>& res1 : result_recipe[next_target1])
+		for (const std::map<int, int>& res2 : result_recipe[next_target2]) {
+			//어째선지 res1,2를 std::map<int, int>::iterator 로 받을 수 없다. const 빼버리면 받아짐. 뭐지.
+
+			if (next_target1 != 0) //0인 경우 next_target2만 고려해야 됨
+				for (const std::pair<int, int>& p1 : res1) {
+					(*candidate)[p1.first] += p1.second;
+				}
+
+			for (const std::pair<int, int>& p2 : res2) {
+				(*candidate)[p2.first] += p2.second;
+			}
+
+			//TODO : 같은 조합이 있는지 확인할 것. 있으면 이 파트는 result_recipe[current_target].erase(--생략.end())로 삭제
+			for (std::pair<int, int> p : (*candidate)) {
+			}
+		}
+
+}
+
+bool FrameRecipe::is_A_aliquot_of_B(int current_min_frame, int current_target)
+{
+	if (current_target % current_min_frame == 0) return true;
+
+	return false;
 }
 
 void FrameRecipe::debug_file()
@@ -80,7 +104,7 @@ void FrameRecipe::debug_file()
 	for (const std::pair<int, std::vector<std::wstring>>& pivw : character_moves) {
 		size_t size = pivw.second.size();
 		std::wcout << pivw.first << ' ' << pivw.second[0];
-		for (int i = 1; i < size; ++i) {
+		for (size_t i = 1; i < size; ++i) {
 			std::wcout << ", " << pivw.second[i];
 		}
 		std::cout << std::endl;
@@ -92,6 +116,27 @@ void FrameRecipe::debug_set()
 	std::cout << "max_size : " << character_moves.max_size() << std::endl;
 }
 
+void FrameRecipe::debug_empty_mapvector()
+{
+	using namespace std;
+
+	map<int, vector<int>> mv;
+	map<int, int> mi1;
+
+	cout << "mv 00 : " << mv[0][0] << endl;
+	cout << "mi1 0 : " << mi1[0] << endl;
+
+	map<int, int> mi2;
+
+	mi1.insert({ 1, 1 });
+	mi1.insert({ 2, 2 });
+
+	mi2.insert({ 1, 1 });
+	mi2.insert({ 2, 2 });
+
+	cout << (mi1 == mi2) << endl;
+}
+
 
 //(기술명1(16) * 3) + (기술명2, 기술명3)(17) + 기술명4(23)...
 //특이 케이스 다 합치면 ((기술명2, 기술명3)(17) * 2)
@@ -99,20 +144,30 @@ std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 {
 	of << "#" << fr.target_frame << std::endl;
 
-	if (fr.result_recipe.size() == 0) {
+	if (fr.result_recipe[fr.target_frame].size() == 0) {
 		of << "발견된 레시피 없음\n\n";
 		return of;
 	}
 
-	for (const std::pair<int, std::map<int,int>>& si : fr.result_recipe) {
-		int size = si.size();
-		int repeat = 0;
-		of << '(' << *si.begin() << ')' << fr.character_moves[*si.begin()][repeat++];
-		for (std::set<int>::iterator sitr = ++si.begin(); sitr != si.end(); ++sitr) {
-			of << " + " << '(' << *sitr << ')' << fr.character_moves[*sitr][repeat++];
+	for (std::map<int, int>& one_of_results : fr.result_recipe[fr.target_frame]) {
+
+		fr.outputting(of, one_of_results.begin());
+		
+		for (std::map<int, int>::iterator mitr = ++one_of_results.begin(); mitr != one_of_results.end(); ++mitr) {
+			std::cout << " + ";
+			fr.outputting(of, mitr);
 		}
-		of << '\n';
 	}
+
+	//for (const std::pair<int, std::vector<std::map<int,int>>>& pvm : fr.result_recipe) {
+	//	int size = pvm.size();
+	//	int repeat = 0;
+	//	of << '(' << *pvm.begin() << ')' << fr.character_moves[*pvm.begin()][repeat++];
+	//	for (std::set<int>::iterator sitr = ++pvm.begin(); sitr != pvm.end(); ++sitr) {
+	//		of << " + " << '(' << *sitr << ')' << fr.character_moves[*sitr][repeat++];
+	//	}
+	//	of << '\n';
+	//}
 
 	of << '\n';
 
@@ -123,22 +178,42 @@ std::wostream& operator<<(std::wostream& o, FrameRecipe& fr)
 {
 	o << "#" << fr.target_frame << std::endl;
 
-	if (fr.result_recipe.size() == 0) {
+	if (fr.result_recipe[fr.target_frame].size() == 0) {
 		o << "발견된 레시피 없음\n\n";
 		return o;
 	}
 
-	for (const std::set<int>& si : fr.result_recipe) {
-		int size = si.size();
-		int repeat = 0;
-		o << '(' << *si.begin() << ')' << fr.character_moves[*si.begin()][repeat++];
-		for (std::set<int>::iterator sitr = ++si.begin(); sitr != si.end(); ++sitr) {
-			o << " + " << '(' << *sitr << ')' << fr.character_moves[*sitr][repeat++];
+	for (std::map<int, int>& one_of_results : fr.result_recipe[fr.target_frame]) {
+
+		fr.outputting(o, one_of_results.begin());
+
+		for (std::map<int, int>::iterator mitr = ++one_of_results.begin(); mitr != one_of_results.end(); ++mitr) {
+			std::cout << " + ";
+			fr.outputting(o, mitr);
 		}
-		o << '\n';
 	}
 
 	o << '\n';
 
 	return o;
+}
+
+//나 지금까지 템플릿에 대해 너무 불안했는데 (사용자들이 예상치 못한 매개변수를 넘기면 어떡하지 하고)
+//이제보니까 사용자들이 쓰게 하는 게 아니라
+//내부에서 중복되는 부분에만 써서 나만 잘 쓰면 되네?
+//무슨 얘기냐면 위에 operator<< 함수보면 wofstream, wostream 인 것만 다르고 다 같은데도
+//사용자가 쓰는 함수니까 템플릿 안 써서 구현했고 오로지 내부에서만 알아서 템플릿 적용된 함수 쓴다
+template<typename Out>
+void FrameRecipe::outputting(Out& out, std::map<int, int>::iterator mitr)
+{
+	if (mitr->second > 1) out << '(';
+
+	if (character_moves[mitr->first].size() > 1) out << '(';
+	out << character_moves[mitr->first][0];
+	for (std::vector<std::wstring>::iterator vitr = ++character_moves[mitr->first].begin(); vitr != character_moves[mitr->first].end(); ++vitr)
+		out << ", " << *vitr;
+	if (character_moves[mitr->first].size() > 1) out << ')';
+
+	out << '(' << mitr->first << ')';
+	if (mitr->second > 1) out << " * " << mitr->second << ')';
 }
