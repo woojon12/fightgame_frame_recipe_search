@@ -18,13 +18,13 @@ void FrameRecipe::recipe_find(int current_target) {
 		//근데 잠만 찐 최소는 0 아닌가. 9를 분할하기 전에 0과 9로 분할아닌 분할을 해야 되지 않나 (Done)
 		if (current_min_frame > current_target) break;
 
-		bool is_aliquot = is_A_aliquot_of_B(current_min_frame, current_target);
+		bool is_aliquot_part = is_A_factor_of_B(current_min_frame, current_target);
 
 		for (int i = 0; true; ++i) {
 			int one_of_next_targets1 = current_min_frame * i;
 			int one_of_next_targets2 = current_target - one_of_next_targets1;
 
-			if (one_of_next_targets2 < current_target / 2 && is_aliquot) //대칭중복 방지 및 종료조건 //DONE : current_min_frame 이 current_target의 약수여야 대칭이 발생함
+			if (one_of_next_targets2 < current_target / 2 && is_aliquot_part) //대칭중복 방지 및 종료조건 //DONE : current_min_frame 이 current_target의 약수여야 대칭이 발생함
 				break;
 
 			bipartition[current_target].push_back({ one_of_next_targets1, one_of_next_targets2 });
@@ -91,7 +91,7 @@ void FrameRecipe::read_memo(int current_target, int next_target1, int next_targe
 		}
 }
 
-bool FrameRecipe::is_A_aliquot_of_B(int current_min_frame, int current_target)
+bool FrameRecipe::is_A_factor_of_B(int current_min_frame, int current_target)
 {
 	if (current_target % current_min_frame == 0) return true;
 
@@ -121,33 +121,6 @@ void FrameRecipe::debug_file()
 		std::cout << std::endl;
 	}
 }
-
-void FrameRecipe::debug_set()
-{
-	std::cout << "max_size : " << character_moves.max_size() << std::endl;
-}
-
-void FrameRecipe::debug_empty_mapvector()
-{
-	using namespace std;
-
-	map<int, vector<int>> mv;
-	map<int, int> mi1;
-
-	//cout << "mv 00 : " << (mv[0][0] == 0) << endl;
-	cout << "mi1 0 : " << mi1[0] << endl;
-
-	map<int, int> mi2;
-
-	mi1.insert({ 1, 3 });
-	mi1.insert({ 2, 4 });
-
-	mi2.insert({ 1, 3 });
-	mi2.insert({ 2, 4 });
-
-	cout << (mi1 == mi2) << endl;
-}
-
 
 //(기술명1(16) * 3) + (기술명2, 기술명3)(17) + 기술명4(23)...
 //특이 케이스 다 합치면 ((기술명2, 기술명3)(17) * 2)

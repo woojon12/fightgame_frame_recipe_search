@@ -18,7 +18,7 @@ class FrameRecipe {
 	bool not_visited(int next_target);
 	bool exist_recipe(int next_target);
 	void read_memo(int, int, int);
-	bool is_A_aliquot_of_B(int current_min_frame, int current_target);
+	bool is_A_factor_of_B(int current_min_frame, int current_target);
 	bool already_exist(std::vector<std::map<int, int>>::iterator candidate, std::vector<std::map<int, int>>& current_result_vector);
 public:
 	FrameRecipe(int target_frame, std::wifstream& frame_data) : target_frame(target_frame) {
@@ -39,12 +39,11 @@ public:
 			//character_moves.find(move_frame)->second.push_back(input);
 		}
 
-		//recipe_find_start();
+		recipe_find(target_frame);
 	}
 
 	void debug_file();
-	void debug_set();
-	void debug_empty_mapvector();
+
 	friend std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr);
 	friend std::wostream& operator<<(std::wostream& o, FrameRecipe& fr);
 private: template<typename Out> void outputting(Out& of, std::map<int, int>::iterator mitr);
