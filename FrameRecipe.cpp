@@ -96,10 +96,20 @@ void FrameRecipe::read_memo(int current_target, int next_target1, int next_targe
 			}
 
 			//DONE : 같은 조합이 있는지 확인할 것. 있으면 이 파트는 result_recipe[current_target].erase(--생략.end())로 삭제
-			if (current_target == 20) std::wcout << L"지금은 20 : ";
-			std::wcout << L"이게 참이 되긴 하니 " << (current_result_vector.size() > 1 && already_exist(candidate, current_result_vector)) << std::endl;
+			
+			//debug
+			std::wcout << L"디버깅 출력 : ";
+			for (std::map<int, int>::iterator mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
+				outputting(std::wcout, mitr);
+			}
+			std::wcout << L'\n';
+			bool debugging = (current_result_vector.size() > 1 && already_exist(candidate, current_result_vector));
+			if (current_target == 20)
+				std::wcout << L"지금은 20 : ";
+			std::wcout << L"이게 참이 되긴 하니 " << debugging << std::endl;
 
-			if (current_result_vector.size() > 1 && already_exist(candidate, current_result_vector)) current_result_vector.erase(candidate);
+			if (debugging)
+				current_result_vector.erase(candidate);
 		}
 }
 
@@ -115,11 +125,21 @@ bool FrameRecipe::already_exist(std::vector<std::map<int, int>>::iterator candid
 	for (std::vector<std::map<int, int>>::iterator vitr = current_result_vector.begin(); vitr != --current_result_vector.end(); ++vitr) {
 		for (std::map<int, int>::iterator mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
 			std::map<int, int>::iterator itr_of_pair_of__first = vitr->find(mitr->first);
-			if (itr_of_pair_of__first == vitr->end()) return false;
-			if (itr_of_pair_of__first->second != mitr->second) return false;
+
+			//debug
+			std::wcout << L"조건1 : " << (itr_of_pair_of__first == vitr->end()) << L'\n';
+			std::wcout << L"first : " << mitr->first << L'\n';
+
+			if (itr_of_pair_of__first == vitr->end()) continue;
+			
+			//debug
+			std::wcout << L"조건2 : " << itr_of_pair_of__first->second << L"!=" << mitr->second << L" = " << (itr_of_pair_of__first->second != mitr->second) << L'\n';
+			
+			if (itr_of_pair_of__first->second != mitr->second) continue;
+			return true;
 		}
 	}
-	return true;
+	return false;
 }
 
 void FrameRecipe::debug_file()

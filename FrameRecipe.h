@@ -21,7 +21,7 @@ class FrameRecipe {
 	bool is_A_factor_of_B(int current_min_frame, int current_target);
 	bool already_exist(std::vector<std::map<int, int>>::iterator candidate, std::vector<std::map<int, int>>& current_result_vector);
 
-	//int debug_pseudo_global_var;
+	int debug_pseudo_global_var;
 
 public:
 	FrameRecipe(int target_frame, std::wifstream& frame_data) : target_frame(target_frame) {
