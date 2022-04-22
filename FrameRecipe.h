@@ -20,6 +20,9 @@ class FrameRecipe {
 	void read_memo(int, int, int);
 	bool is_A_factor_of_B(int current_min_frame, int current_target);
 	bool already_exist(std::vector<std::map<int, int>>::iterator candidate, std::vector<std::map<int, int>>& current_result_vector);
+
+	//int debug_pseudo_global_var;
+
 public:
 	FrameRecipe(int target_frame, std::wifstream& frame_data) : target_frame(target_frame) {
 		if (frame_data.fail()) { std::wcout << "파일이 없습니다\n" << std::endl; return; }
@@ -39,10 +42,23 @@ public:
 			//character_moves.find(move_frame)->second.push_back(input);
 		}
 
+		//result_recipe[key][0][key] = 1 이라는 끝값을 채워넣어야 됨
+		for (const std::pair<int, std::vector<std::wstring>> pairiv : character_moves) {
+			result_recipe[pairiv.first].push_back(std::map<int, int>());
+			result_recipe[pairiv.first][0][pairiv.first] = 1;
+			bipartition[pairiv.first].push_back({ 0, pairiv.first }); //not_visited 함수에서 방문 안됐다고 인식되서 아무 의미없는 거라도 넣기
+		}
+		//또한 0도 레시피가 있다고 인정해야 그냥 0을 1개 보유한다고 작성(result_recipe[0][0][0] = 1)은 해놓고 비교 작업할 땐 0이면 제외시키자
+		// 는 개뿔 이 아래 3줄 없어야 프로그램 잘 돌아가네 뭐지.
+		//result_recipe[0].push_back(std::map<int, int>());
+		//result_recipe[0][0][0] = 1;
+		//bipartition[0].push_back({ 0, 0 });
+
 		recipe_find(target_frame);
 	}
 
 	void debug_file();
+	void debug_map_init();
 
 	friend std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr);
 	friend std::wostream& operator<<(std::wostream& o, FrameRecipe& fr);

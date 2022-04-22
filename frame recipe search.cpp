@@ -85,6 +85,35 @@ https://kiros33.tistory.com/entry/%EC%9C%88%EB%8F%84%EC%9A%B0%EC%97%90%EC%84%9C-
 */
 
 
+void debug_empty_map_range_based_for_statement()
+{
+	std::map<int, int> empty_map;
+
+	for (std::pair<int, int> test_pair : empty_map);
+
+	empty_map.insert({1,1});
+
+	empty_map.erase(empty_map.begin());
+
+	std::wcout << empty_map.size() << L" : 여기까지 프로그램이 살아서 오는가?\n"; //살아서 오네
+}
+
+void vector2_range_based_for_statement()
+{
+	vector<map<int, int>> vm;
+	vm.push_back(map<int, int>());
+	vm.push_back(map<int, int>());
+
+	vm[0][1] = 2;
+	vm[1][1] = 3;
+
+	for (const map<int, int>& rbfm : vm) { //여기서 &을 붙여 레퍼런스로 받으면
+		cout << "rbfm[1] : " << rbfm.find(1)->second << endl;
+		vm.push_back(map<int, int>());
+		cout << "rbfm[1] : " << rbfm.find(1)->second << endl; //어째선지 여기서 프로그램이 강제종료됨
+		break;
+	}
+}
 
 int main()
 {
@@ -94,6 +123,7 @@ int main()
 	FrameRecipe fr(20, frame_data);
 
 	fr.debug_file();
+	debug_empty_map_range_based_for_statement();
 
 	wcout << fr << endl;
 }
