@@ -21,9 +21,8 @@ class FrameRecipe {
 	bool is_A_factor_of_B(int current_min_frame, int current_target);
 	bool already_exist(std::vector<std::map<int, int>>::iterator candidate, std::vector<std::map<int, int>>& current_result_vector);
 
-	int debug_pseudo_global_var;
-
 public:
+	//wifstream 클래스의 복사 생성자는 더 이상 지원 안 되는건지 레퍼런스로 받지 않으면 에러가 난다
 	FrameRecipe(int target_frame, std::wifstream& frame_data) : target_frame(target_frame) {
 		if (frame_data.fail()) { std::wcout << "파일이 없습니다\n" << std::endl; return; }
 
@@ -34,8 +33,7 @@ public:
 			int move_frame = stoi(input);
 
 			getline(frame_data, input);
-			//character_moves.push_back(move(input_frame, input));
-			
+
 			character_moves[move_frame].push_back(input);
 			//만약 map을 이처럼 []로 사용하지 않는다면 아래 코드와 같이 사용해야 한다. 정말 구린 가독성과 시간낭비.
 			//character_moves.insert(std::pair<int, std::vector<std::wstring>>(move_frame, *new std::vector<std::wstring>));
@@ -57,6 +55,9 @@ public:
 
 		recipe_find(target_frame);
 	}
+
+	FrameRecipe(int oki_frame, int startup_frame, int active_frame, std::wifstream& frame_data) : FrameRecipe(oki_frame - startup_frame - active_frame + 2, frame_data) {}
+	//자바방식으로 생성자 재호출하려고 this 가지고 끙끙대고 있던 내 코딩지식이 레전드
 
 	void debug_file();
 	void debug_map_init();

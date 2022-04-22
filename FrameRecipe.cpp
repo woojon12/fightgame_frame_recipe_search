@@ -1,20 +1,13 @@
 #include "FrameRecipe.h"
 
-//시간을 많이 투자한다고 햇을 때 안도가 생기지 않으면 온전히 집중하지 않고 그 시간을 보내겠다는 뜻.
-//시간을 최대로 쥐어짜면 안도할 수 있을만큼 집중해라. (시간이 없다해도 만약 있게 할 수 있다면이란 가정을 하고)
-//너가 집중을 못하는 인간이라면 시간을 극도로 쥐어짜도 안도하지 못할 것. 그 시간을 무쓸모로 보낼 거기에.
-
-
 void FrameRecipe::recipe_find(int current_target) {
 	//TODO: 최대조합(목표÷최소) 최적화, 
-	//DOING: 대칭 최적화
 	
 	std::map<int, std::vector<std::wstring>>::iterator mitr = character_moves.begin();
 
 	for (; mitr != character_moves.end(); ++mitr) {
 		//최소찾기
 		int current_min_frame = mitr->first; //애초에 map이란 자료구조가 key오름차순 정렬 해놓기에 첫번째가 제일 작은 놈.
-		//근데 잠만 찐 최소는 0 아닌가. 9를 분할하기 전에 0과 9로 분할아닌 분할을 해야 되지 않나 (Done)
 
 		if (current_min_frame > current_target) break;
 
@@ -25,8 +18,7 @@ void FrameRecipe::recipe_find(int current_target) {
 			int one_of_next_targets2 = current_target - one_of_next_targets1;
 
 			if (one_of_next_targets2 < 0) break; //아래 조건만으론 약수 아니면 무한으로 음수로 빠짐
-
-			if (one_of_next_targets2 < current_target / 2 && is_aliquot_part) break; //대칭중복 방지 및 종료조건 //DONE : current_min_frame 이 current_target의 약수여야 대칭이 발생함
+			if (one_of_next_targets2 < current_target / 2 && is_aliquot_part) break;
 
 			bipartition[current_target].push_back({ one_of_next_targets1, one_of_next_targets2 });
 
@@ -38,12 +30,6 @@ void FrameRecipe::recipe_find(int current_target) {
 				read_memo(current_target, one_of_next_targets1, one_of_next_targets2);
 		}
 	}
-	//'목표 마이너스 최소'를 재귀할건데
-		//그러기 전에 이미 메모이제이션 된 게 있으면 꺼내쓰기
-
-	//재귀완료된 건 메모이제이션(저장)
-
-	//다음 최소를 찾고 반복. 다음 최소가 타겟보다 커지거나 모든 무브를 방문할 때까지. (Done)
 }
 
 bool FrameRecipe::not_visited(int next_target)
@@ -86,8 +72,6 @@ void FrameRecipe::read_memo(int current_target, int next_target1, int next_targe
 			for (const std::pair<int, int>& p2 : res2) {
 				(*candidate)[p2.first] += p2.second;
 			}
-
-			//DONE : 같은 조합이 있는지 확인할 것. 있으면 이 파트는 result_recipe[current_target].erase(--생략.end())로 삭제
 
 			if (current_result_vector.size() > 1 && already_exist(candidate, current_result_vector))
 				current_result_vector.erase(candidate);
@@ -159,16 +143,6 @@ std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 
 		of << '\n';
 	}
-
-	//for (const std::pair<int, std::vector<std::map<int,int>>>& pvm : fr.result_recipe) {
-	//	int size = pvm.size();
-	//	int repeat = 0;
-	//	of << '(' << *pvm.begin() << ')' << fr.character_moves[*pvm.begin()][repeat++];
-	//	for (std::set<int>::iterator sitr = ++pvm.begin(); sitr != pvm.end(); ++sitr) {
-	//		of << " + " << '(' << *sitr << ')' << fr.character_moves[*sitr][repeat++];
-	//	}
-	//	of << '\n';
-	//}
 
 	return of;
 }

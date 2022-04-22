@@ -84,45 +84,17 @@ https://kiros33.tistory.com/entry/%EC%9C%88%EB%8F%84%EC%9A%B0%EC%97%90%EC%84%9C-
 
 */
 
-
-void debug_empty_map_range_based_for_statement()
-{
-	std::map<int, int> empty_map;
-
-	for (std::pair<int, int> test_pair : empty_map);
-
-	empty_map.insert({1,1});
-
-	empty_map.erase(empty_map.begin());
-
-	std::wcout << empty_map.size() << L" : 여기까지 프로그램이 살아서 오는가?\n"; //살아서 오네
-}
-
-void vector2_range_based_for_statement()
-{
-	vector<map<int, int>> vm;
-	vm.push_back(map<int, int>());
-	vm.push_back(map<int, int>());
-
-	vm[0][1] = 2;
-	vm[1][1] = 3;
-
-	for (const map<int, int>& rbfm : vm) { //여기서 &을 붙여 레퍼런스로 받으면
-		cout << "rbfm[1] : " << rbfm.find(1)->second << endl;
-		vm.push_back(map<int, int>());
-		cout << "rbfm[1] : " << rbfm.find(1)->second << endl; //어째선지 여기서 프로그램이 강제종료됨
-		break;
-	}
-}
-
 int main()
 {
 	locale::global(locale("ko_KR.UTF-8"));
 	int target_frame;
-	wifstream frame_data("frame_data2.txt");
-	FrameRecipe fr(5, frame_data);
+	wifstream frame_data("kage_frame_data.txt");
+	FrameRecipe fr(87, 22, 3, frame_data); //카게 앉강발 크카 후 트캔(+87)에서 발동이 22이고 지속이 3인 중단기를 최대이득으로 깔려면 64프레임의 레시피가 필요하다는 걸 알아서 계산.
 
 	fr.debug_file();
 
 	wcout << fr << endl;
+
+	//update : 후상황 프레임과 깔아둘 공격의 발동과 지속을 적으면 알아서 최대로 깔아두는 프레임 계산해주고 돌리기 (계산식 : 후상황 - 발동 - 지속 + 2)
+	//last TODO : 연타 가능 기본기의 경우 연타 시 프레임이 달라져 두 번 연속 사용하는 레시피를 따를 수 없으므로 그것도 고려한 신들린 알고리즘 만들기. 이건 솔직히 귀찮음.
 }
