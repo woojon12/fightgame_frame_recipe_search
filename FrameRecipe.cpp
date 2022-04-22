@@ -16,9 +16,6 @@ void FrameRecipe::recipe_find(int current_target) {
 		int current_min_frame = mitr->first; //애초에 map이란 자료구조가 key오름차순 정렬 해놓기에 첫번째가 제일 작은 놈.
 		//근데 잠만 찐 최소는 0 아닌가. 9를 분할하기 전에 0과 9로 분할아닌 분할을 해야 되지 않나 (Done)
 
-		//debug
-		if (current_target < 0) std::cout << current_min_frame << "(current_min_frame) > " << current_target << "(current_target) = " << (current_min_frame > current_target) << "\n";
-
 		if (current_min_frame > current_target) break;
 
 		bool is_aliquot_part = is_A_factor_of_B(current_min_frame, current_target);
@@ -76,13 +73,8 @@ void FrameRecipe::read_memo(int current_target, int next_target1, int next_targe
 
 	for (const std::map<int, int>& res1 : result_recipe[next_target1])
 		for (const std::map<int, int>& res2 : result_recipe[next_target2]) {
-
 			current_result_vector.push_back(std::map<int, int>());
 			std::vector<std::map<int, int>>::iterator candidate = --current_result_vector.end();
-
-			//debug
-			if (next_target2 == 6)
-				std::wcout << L"맵 사이즈 : " << res2.size() << std::endl;
 
 			//어째선지 res1,2를 std::map<int, int>::iterator 로 받을 수 없다. res1,2 에 const 빼버리면 받아짐. 뭐지.
 
@@ -96,19 +88,8 @@ void FrameRecipe::read_memo(int current_target, int next_target1, int next_targe
 			}
 
 			//DONE : 같은 조합이 있는지 확인할 것. 있으면 이 파트는 result_recipe[current_target].erase(--생략.end())로 삭제
-			
-			//debug
-			std::wcout << L"디버깅 출력 : ";
-			for (std::map<int, int>::iterator mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
-				outputting(std::wcout, mitr);
-			}
-			std::wcout << L'\n';
-			bool debugging = (current_result_vector.size() > 1 && already_exist(candidate, current_result_vector));
-			if (current_target == 20)
-				std::wcout << L"지금은 20 : ";
-			std::wcout << L"이게 참이 되긴 하니 " << debugging << std::endl;
 
-			if (debugging)
+			if (current_result_vector.size() > 1 && already_exist(candidate, current_result_vector))
 				current_result_vector.erase(candidate);
 		}
 }
@@ -126,15 +107,7 @@ bool FrameRecipe::already_exist(std::vector<std::map<int, int>>::iterator candid
 		for (std::map<int, int>::iterator mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
 			std::map<int, int>::iterator itr_of_pair_of__first = vitr->find(mitr->first);
 
-			//debug
-			std::wcout << L"조건1 : " << (itr_of_pair_of__first == vitr->end()) << L'\n';
-			std::wcout << L"first : " << mitr->first << L'\n';
-
 			if (itr_of_pair_of__first == vitr->end()) continue;
-			
-			//debug
-			std::wcout << L"조건2 : " << itr_of_pair_of__first->second << L"!=" << mitr->second << L" = " << (itr_of_pair_of__first->second != mitr->second) << L'\n';
-			
 			if (itr_of_pair_of__first->second != mitr->second) continue;
 			return true;
 		}

@@ -46,7 +46,8 @@ public:
 		for (const std::pair<int, std::vector<std::wstring>> pairiv : character_moves) {
 			result_recipe[pairiv.first].push_back(std::map<int, int>());
 			result_recipe[pairiv.first][0][pairiv.first] = 1;
-			bipartition[pairiv.first].push_back({ 0, pairiv.first }); //not_visited 함수에서 방문 안됐다고 인식되서 아무 의미없는 거라도 넣기
+
+			//bipartition[pairiv.first].push_back({ 0, pairiv.first }); //이거 안하면 not_visited 함수에서 방문 안됐다고 인식되서 아무 의미없는 거라도 넣기는 개뿔 안 넣어야 빈틈없이 동작
 		}
 		//또한 0도 레시피가 있다고 인정해야 그냥 0을 1개 보유한다고 작성(result_recipe[0][0][0] = 1)은 해놓고 비교 작업할 땐 0이면 제외시키자
 		// 는 개뿔 이 아래 3줄 없어야 프로그램 잘 돌아가네 뭐지.

@@ -119,11 +119,10 @@ int main()
 {
 	locale::global(locale("ko_KR.UTF-8"));
 	int target_frame;
-	wifstream frame_data("frame_data.txt");
-	FrameRecipe fr(20, frame_data);
+	wifstream frame_data("frame_data2.txt");
+	FrameRecipe fr(5, frame_data);
 
 	fr.debug_file();
-	debug_empty_map_range_based_for_statement();
 
 	wcout << fr << endl;
 }
