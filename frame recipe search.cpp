@@ -1,9 +1,8 @@
+#include <locale>
+#include "FrameRecipe.h"
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <locale>
-#include <vector>
-#include "FrameRecipe.h"
 using namespace std;
 
 /*
@@ -84,16 +83,68 @@ https://kiros33.tistory.com/entry/%EC%9C%88%EB%8F%84%EC%9A%B0%EC%97%90%EC%84%9C-
 
 */
 
+void input_request(int& input) {
+	do {
+		if (wcin.fail()) {
+			wcout << L"숫자를 입력하시오\n\n >> ";
+			wcin.clear();
+			wcin.ignore(100, '\n');
+		}
+	} while (!(wcin >> input));
+}
+
 int main()
 {
 	locale::global(locale("ko_KR.UTF-8"));
 	int target_frame;
-	wifstream frame_data("kage_frame_data.txt");
-	FrameRecipe fr(87, 22, 3, frame_data); //카게 앉강발 크카 후 트캔(+87)에서 발동이 22이고 지속이 3인 중단기를 최대이득으로 깔려면 64프레임의 레시피가 필요하다는 걸 알아서 계산.
+	wifstream frame_data("frame_data.txt");
+	FrameRecipe FR;
 
-	fr.debug_file();
+	wcout << L"이 프로그램을 사용하기 위해서는 exe파일과 같은 경로(폴더)에 frame_data.txt 파일이 존재해야 합니다\n\n";
+	wcout << L"다음 항목에서 선택하시오\n\n 0. 사용 시 유의사항 읽어보기\n 1. 원하는 프레임 단순 입력\n 2. 후상황과 깔아둘 공격의 발동과 지속 입력(해당 공격이 최대한 깔리게 하는 프레임을 알아서 계산하여 레시피를 구합니다)\n\n (이외 숫자는 프로그램 종료)\n\n >> ";
 
-	wcout << fr << endl;
+	input_request(target_frame);
+
+	switch (target_frame) {
+	case 0:
+		wcout << L"\tA. frame_data.txt 를 작성할 때는 각 줄마다\n\t(기술의 동작 프레임)(띄어쓰기 한 번)(기술명) 양식으로 작성해주십시오.(ex: 51 약 승룡)\n\n";
+		wcout << L"\tB. 연타 가능 기본기의 경우 두 번 연속 사용 시\n\t단순히 한 번 사용했을 때 프레임의 두 배가 되는 게 아니기 때문에\n\t결과에 (약손 * 2) 같은 게 낀 레시피는 걸러야 합니다.\n\t(연타 했을 경우 결과 프레임이 어떻게 다른지 모두 알고 frame_data.txt에 작성할 수 있다면 보완 가능)\n\n";
+		wcout << L"\tC. 상대랑 거리가 많이 벌어지는 후상황이라면\n\t레시피 상에 앞대쉬와 같은 전진성 있는 동작이 잘 껴있는 것만 실전에서 사용할 수 있음에 유의하십시오\n\n";
+		wcout << L"\tD. 만약 +87의 후상황에서 발동이 22이고 지속이 3인 기술을 깔고 싶다면\n\t87 - 22 - 3 + 2 = 64의 동작 레시피를 따른 후 마지막에 그 기술을 쓰면 깔리게 됩니다\n\t해당 계산을 돕기 위해 2번 항목을 만들어두었습니다\n\n";
+		wcout << L"\tE. 당연하지만 한 레시피 내의 동작 순서가 바뀌더라도 같은 레시피이므로\n\t본인이 입력하기 편한 순서로 바꿔서 사용하시는 게 좋습니다\n\n";
+		system("pause");
+		return 0;
+		break;
+
+	case 1:
+		wcout << L"\n원하는 레시피 프레임을 입력하시오\n >> ";
+		input_request(target_frame);
+		FR = FrameRecipe(target_frame, frame_data);
+		break;
+	case 2:
+		int oki_frame, startup_frame, active_frame;
+		wcout << L"\n띄어쓰기로 구분하여 '후상황 프레임', '깔아둘 공격의 발동 프레임', '깔아둘 공격의 지속 프레임' 순으로 입력해주십시오\n >> ";
+		input_request(oki_frame);
+		input_request(startup_frame);
+		input_request(active_frame);
+		//FR = FrameRecipe(oki_frame, startup_frame, active_frame, frame_data);
+		target_frame = oki_frame - startup_frame - active_frame + 2;
+		FR = FrameRecipe(target_frame, frame_data);
+		break;
+	default:
+		return 0;
+	}
+	
+	wstring output_filename(L"recipe ");
+	output_filename.append(to_wstring(target_frame));
+	output_filename.append(L".txt");	
+	wofstream output(output_filename);
+
+	output << FR;
+	wcout << '\n' << FR << endl;
+	
+	wcout << L"위 내용은 " << output_filename << L" 라는 이름의 메모장에 기록되었습니다\n" << endl; 
+	system("pause");
 
 	//update : 후상황 프레임과 깔아둘 공격의 발동과 지속을 적으면 알아서 최대로 깔아두는 프레임 계산해주고 돌리기 (계산식 : 후상황 - 발동 - 지속 + 2)
 	//last TODO : 연타 가능 기본기의 경우 연타 시 프레임이 달라져 두 번 연속 사용하는 레시피를 따를 수 없으므로 그것도 고려한 신들린 알고리즘 만들기. 이건 솔직히 귀찮음.

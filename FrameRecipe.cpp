@@ -88,13 +88,16 @@ bool FrameRecipe::is_A_factor_of_B(int current_min_frame, int current_target)
 bool FrameRecipe::already_exist(std::vector<std::map<int, int>>::iterator candidate, std::vector<std::map<int, int>>& current_result_vector)
 {
 	for (std::vector<std::map<int, int>>::iterator vitr = current_result_vector.begin(); vitr != --current_result_vector.end(); ++vitr) {
-		for (std::map<int, int>::iterator mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
+		std::map<int, int>::iterator mitr;
+
+		for (mitr = candidate->begin(); mitr != candidate->end(); ++mitr) {
 			std::map<int, int>::iterator itr_of_pair_of__first = vitr->find(mitr->first);
 
-			if (itr_of_pair_of__first == vitr->end()) continue;
-			if (itr_of_pair_of__first->second != mitr->second) continue;
-			return true;
+			if (itr_of_pair_of__first == vitr->end()) break;
+			if (itr_of_pair_of__first->second != mitr->second) break;
+			//이전버전에선 16 + 24 랑 16 + 11 + 13 을 구분하지 못했다. 그저 16이 1개 있다는 게 같다는 이유로.
 		}
+		if (mitr == candidate->end()) return true;
 	}
 	return false;
 }
@@ -125,7 +128,7 @@ void FrameRecipe::debug_map_init()
 //특이 케이스 다 합치면 ((기술명2, 기술명3)(17) * 2)
 std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 {
-	of << "#" << fr.target_frame << std::endl;
+	of << L"# " << fr.target_frame << L"\n\n";
 
 	if (fr.result_recipe[fr.target_frame].size() == 0) {
 		of << L"발견된 레시피 없음\n\n";
@@ -137,11 +140,11 @@ std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 		fr.outputting(of, one_of_results.begin());
 		
 		for (std::map<int, int>::iterator mitr = ++one_of_results.begin(); mitr != one_of_results.end(); ++mitr) {
-			of << " + ";
+			of << L" + ";
 			fr.outputting(of, mitr);
 		}
 
-		of << '\n';
+		of << L'\n';
 	}
 
 	return of;
@@ -149,7 +152,7 @@ std::wofstream& operator<<(std::wofstream& of, FrameRecipe& fr)
 
 std::wostream& operator<<(std::wostream& o, FrameRecipe& fr)
 {
-	o << "#" << fr.target_frame << std::endl;
+	o << L"# " << fr.target_frame << L"\n\n";
 
 	if (fr.result_recipe[fr.target_frame].size() == 0) {
 		o << L"발견된 레시피 없음\n\n";
@@ -165,7 +168,7 @@ std::wostream& operator<<(std::wostream& o, FrameRecipe& fr)
 			fr.outputting(o, mitr);
 		}
 
-		o << '\n';
+		o << L'\n';
 	}
 
 	return o;
